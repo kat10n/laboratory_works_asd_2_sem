@@ -17,6 +17,6 @@ test: tree.o tests.o
 	gcc -o test tree.o tests.o
 
 clean:
-	del /Q *.o main.exe test.exe 2>nul || true
+	del *.o *.exe
 
 
