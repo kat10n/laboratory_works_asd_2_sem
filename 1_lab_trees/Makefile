@@ -1,6 +1,9 @@
 all: tree.o cli.o main.o tests.o
 	gcc -o main tree.o cli.o main.o tests.o
 
+tests: tree.o tests.o
+	gcc -o tests tree.o tests.o
+
 tree.o: src/tree.c
 	gcc -c src/tree.c
 
