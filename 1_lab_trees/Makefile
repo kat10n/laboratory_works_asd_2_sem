@@ -1,5 +1,5 @@
 all: tree.o cli.o main.o tests.o
-	gcc -o main tree.o cli.o main.o tests.o
+	gcc -o main tree.o cli.o main.o
 
 tests: tree.o tests.o
 	gcc -o tests tree.o tests.o
