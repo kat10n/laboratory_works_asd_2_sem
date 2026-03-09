@@ -90,10 +90,5 @@ int findMinDepthLeaf(Node* root) {
     int minValue = 0;
     findMinDepthLeafHelper(root, 0, &minDepth, &minValue);
 
-    if (minDepth == INT_MAX) {
-        printf("В дереве нет листьев.\n");
-        return -1;
-    }
-
     return minValue;
 }

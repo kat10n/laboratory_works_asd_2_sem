@@ -69,5 +69,6 @@ int main() {
     test_branching_tree();
     test_after_deletion();
     test_delete_root();
+    printf("Все тесты пройдены корректно");
     return 0;
 }

@@ -29,9 +29,9 @@ Node* findParent(Node* root, int value, Node** child) {
 }
 
 // Добавление узла по значению родителя
-void addNode(Node** root, int parentValue, int newValue) 
+void addNode(Node* root, int parentValue, int newValue) 
 {
-    Node* parent = findNode(*root, parentValue);
+    Node* parent = findNode(root, parentValue);
     if (parent == NULL) {
         printf("Родитель со значением %d не найден.\n", parentValue);
         return;
@@ -42,21 +42,21 @@ void addNode(Node** root, int parentValue, int newValue)
 }
 
 // Удаление узла по значению
-void deleteNode(Node** root, int value) {
-    if (*root == NULL) {
+void deleteNode(Node* root, int value) {
+    if (root == NULL) {
         printf("Дерево пусто.\n");
         return;
     }
     // Случай удаления корня
-    if ((*root)->data == value) {
-        removeSubtree(*root);
-        *root = NULL;
+    if ((root)->data == value) {
+        removeSubtree(root);
+        root = NULL;
         printf("Корень удалён. Дерево пусто.\n");
         return;
     }
     Node* parent = NULL;
     Node* toDelete = NULL;
-    parent = findParent(*root, value, &toDelete);
+    parent = findParent(root, value, &toDelete);
     if (parent == NULL) {
         printf("Узел со значением %d не найден.\n", value);
         return;
@@ -77,7 +77,7 @@ void deleteNode(Node** root, int value) {
 
 // Интерфейс командной строки
 void cli(Node** root) {
-    char command[20] = {0};
+    char command[128] = {0};
     int arg1, arg2;
 
     printf("Доступные команды:\n");
@@ -90,7 +90,7 @@ void cli(Node** root) {
 
     while (1) {
         printf("> ");
-        if (scanf("%19s", command) != 1) break; // конец ввода
+        if (scanf("%127s", command) != 1) break; // конец ввода
 
         if (strcmp(command, "exit") == 0) {
             printf("Выход.\n");
