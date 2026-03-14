@@ -7,7 +7,7 @@ void bubble_sort(Item *list[], int n) {
 		flag = 0;
 		for (int j = 0; j < n - i - 1; j++) {
 			if (list[j]->key < list[j + 1]->key) {
-				a = list[j];
+				Item a = list[j];
 				list[j] = list[j + 1];
 				list[j + 1] = a;
 				flag = 1;
