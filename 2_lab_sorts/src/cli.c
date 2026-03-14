@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "struct.h"
+#include "read_file.h"
+#include "binary_search.h"
 
 void cli() {
     char command[8] = {0};
@@ -14,7 +16,7 @@ void cli() {
     printf("1       - отсортировать файл с упорядоченными элементами\n");
     printf("2       - отсортировать файл с элементами в обратном порядке\n");
     printf("3       - отсортировать файл с неупорядоченными элементами\n");
-    printf("4 <key> - найти значение по ключу\n");
+    printf("4 <key> - найти значение по ключу (сначала надо выполнить команду 1-3)\n");
     printf("5       - выход\n");
 
 
@@ -42,7 +44,8 @@ void cli() {
             } else {
                 filename = "text_files/random_order.txt";
             }
-            list = read_file(filename, &list_size);
+            list_size = get_list_size(filename);
+            list = read_file(filename, list_size);
         }
         else if (strcmp(command, "4") == 0) {
             if (scanf("%d", &arg) != 1) {
@@ -69,9 +72,4 @@ void cli() {
         free(list);
     }
 }
-    // Освобождаем память при выходе
-    if (list != NULL) {
-        for (int i = 0; i < list_size; i++) free(list[i].value);
-        free(list);
-    }
-}
+

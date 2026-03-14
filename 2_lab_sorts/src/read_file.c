@@ -2,20 +2,32 @@
 #include <stdlib.h>
 #include <string.h>
 #include "struct.h"
+#include "bubble_sort.h"
 
-Item* read_file(char *file_name, int *out_n) {
-    *out_n = 0;
+int get_list_size(char *file_name) {
     FILE *file = fopen(file_name, "r");
     if (file == NULL) {
         printf("Ошибка: не удалось открыть файл");
-        return NULL;
+        return 0;
     }
     int n;
     if (fscanf(file, "%d", &n) != 1) {
         printf("Невозможно прочитать количество строк в файле");
         fclose(file);
+        return 0;
+    }
+    fclose(file);
+    return n;
+}
+
+Item* read_file(char *file_name, int n) {
+    FILE *file = fopen(file_name, "r");
+    if (file == NULL) {
+        printf("Ошибка: не удалось открыть файл");
         return NULL;
     }
+    int skip_first;
+    fscanf(file, "%d", &skip_first); // пропускаем первую строку (размер)
 
     Item *list = malloc(sizeof(Item) * n);
     if (list == NULL) {
@@ -61,16 +73,17 @@ Item* read_file(char *file_name, int *out_n) {
 
         list[i].value = line;
     }
+    printf("Исходный массив:\n");
     for (int i = 0; i < n; i++) {
         printf("%d  |  %s\n", list[i].key, list[i].value);
-        printf("----------------");
+        printf("----------------\n");
     }
     bubble_sort(list, n);
+    printf("Отсортированный массив:\n");
     for (int i = 0; i < n; i++) {
         printf("%d  |  %s\n", list[i].key, list[i].value);
         printf("----------------\n");
     }
     fclose(file);
-    *out_n = n;
     return list;
 }

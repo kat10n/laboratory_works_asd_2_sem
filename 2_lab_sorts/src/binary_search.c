@@ -11,7 +11,7 @@ Item* binary_search(Item list[], int left, int right, int key) {
     int mid = left + (right - left) / 2;
 
     if (list[mid].key == key) {
-        return &list[mid].value;
+        return &list[mid];
     }
 
     if (list[mid].key < key) {

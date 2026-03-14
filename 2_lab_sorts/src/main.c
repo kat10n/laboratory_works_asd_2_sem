@@ -1,11 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "struct.h"
+#include "cli.h"
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 
 int main() {
-	read_file("text_files/direct_order.txt");
-    read_file("text_files/reverse_order.txt");
-    read_file("text_files/random_order.txt");
+#ifdef _WIN32
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+#endif  
+	cli();
     return 0;
 
 }
