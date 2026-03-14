@@ -42,7 +42,7 @@ void read_file(char *file_name) {
         // Читаем строку со значением
         char *line = NULL;
         size_t len = 0;
-        ssize_t read = getline(&line, &len, file);
+        int read = getline(&line, &len, file);
         if (read == -1) {
             printf("Ошибка чтения значения для элемента %d", i);
             free(line);
