@@ -3,24 +3,25 @@
 #include <string.h>
 #include "struct.h"
 
-void read_file(char *file_name) {
+Item* read_file(char *file_name, int *out_n) {
+    *out_n = 0;
     FILE *file = fopen(file_name, "r");
     if (file == NULL) {
         printf("Ошибка: не удалось открыть файл");
-        return;
+        return NULL;
     }
     int n;
     if (fscanf(file, "%d", &n) != 1) {
         printf("Невозможно прочитать количество строк в файле");
         fclose(file);
-        return;
+        return NULL;
     }
 
     Item *list = malloc(sizeof(Item) * n);
     if (list == NULL) {
         printf("Ошибка выделения памяти");
         fclose(file);
-        return;
+        return NULL;
     }
 
     for (int i = 0; i < n; i++) {
@@ -31,7 +32,7 @@ void read_file(char *file_name) {
             }
             free(list);
             fclose(file);
-            return;
+            return NULL;
         }
 
         char *skip = NULL;
@@ -51,7 +52,7 @@ void read_file(char *file_name) {
             }
             free(list);
             fclose(file);
-            return;
+            return NULL;
         }
 
         if (read > 0 && line[read - 1] == '\n') { // Удаляем символ новой строки, если он есть
@@ -60,12 +61,16 @@ void read_file(char *file_name) {
 
         list[i].value = line;
     }
-
-    bubble_sort(list, n);
-
     for (int i = 0; i < n; i++) {
-        free(list[i].value);
+        printf("%d  |  %s\n", list[i].key, list[i].value);
+        printf("----------------");
     }
-    free(list);
+    bubble_sort(list, n);
+    for (int i = 0; i < n; i++) {
+        printf("%d  |  %s\n", list[i].key, list[i].value);
+        printf("----------------\n");
+    }
     fclose(file);
+    *out_n = n;
+    return list;
 }

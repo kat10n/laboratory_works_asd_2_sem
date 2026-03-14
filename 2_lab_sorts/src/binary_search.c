@@ -3,29 +3,20 @@
 #include "struct.h"
 
 
-Item* binary_search(Item list[], int n, Item item, int key){
-    if (list == NULL || item == NULL || key < list[0].key || key > list[0].key){
-        int a = (n - 1) / 2;
-        if (list[a].key == item.key){
-            return list[a].value;
-        }
-        if (list[a].key < item.key){
-            Item slice[a];
+Item* binary_search(Item list[], int left, int right, int key) {
+    if (left > right) {
+        return NULL;
+    }
 
-            for (int i = 0; i < a; i++) {
-                slice[i] = list[i];
-            }
-            list = slice;
-            binary_search(list, a, item, key);
-        }
-        if (list[a].key > item.key){
-            Item slice[n - a];
+    int mid = left + (right - left) / 2;
 
-            for (int i = a++; i < n; i++) {
-                slice[i] = list[i];
-            }
-            list = slice;
-            binary_search(list, n, item, key);
-        }
+    if (list[mid].key == key) {
+        return &list[mid].value;
+    }
+
+    if (list[mid].key < key) {
+        return binary_search(list, mid + 1, right, key);
+    } else {
+        return binary_search(list, left, mid - 1, key);
     }
 }
