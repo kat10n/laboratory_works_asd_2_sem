@@ -25,7 +25,7 @@ void read_file(char *file_name) {
         lines++;
     }
     int n = 15;
-    Node *list = malloc(sizeof(Item)*n);
+    Item *list = malloc(sizeof(Item)*n);
     for (int i = 0; i <= n; i++) {
         fscanf(file, "%d %s", &list[i].key, list[i].value);
     }

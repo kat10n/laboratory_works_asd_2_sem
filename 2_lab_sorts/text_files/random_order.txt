@@ -1,17 +1,12 @@
-12
-value 12
+11
 4
 value 4
 8
 value 8
-15
-value 15
 1
 value 1
 10
 value 10
-13
-value 13
 6
 value 6
 2
@@ -20,8 +15,6 @@ value 2
 value 11
 7
 value 7
-14
-value 14
 3
 value 3
 9
