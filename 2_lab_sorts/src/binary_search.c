@@ -8,7 +8,7 @@ Item* binary_search(Item list[], int left, int right, int key) {
         return NULL;
     }
 
-    int mid = (left + right) / 2;
+    int mid = left + (right - left) / 2;
 
     if (list[mid].key == key) {
         return &list[mid];
