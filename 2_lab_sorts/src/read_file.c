@@ -27,7 +27,7 @@ Item* read_file(char *file_name, int n) {
         return NULL;
     }
     int skip_first;
-    fscanf(file, "%d", &skip_first); // пропускаем первую строку (размер)
+    fscanf(file, "%d", &skip_first); // пропускаем первую строку
 
     Item *list = malloc(sizeof(Item) * n);
     if (list == NULL) {
@@ -49,7 +49,7 @@ Item* read_file(char *file_name, int n) {
 
         char *skip = NULL;
         size_t skip_len = 0;
-        getline(&skip, &skip_len, file); // Пропускаем остаток строки после чтения ключа
+        getline(&skip, &skip_len, file); // Пропускаем остаток строки \n
         free(skip);
 
         // Читаем строку со значением
