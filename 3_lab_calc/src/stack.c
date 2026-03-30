@@ -35,7 +35,6 @@ Stack* stack_pop(Stack *stack) {
     }
     Stack *newTop = stack->next;
     free(stack);
-    if (newTop != NULL) newTop->size--;
     return newTop;
 }
 
@@ -80,7 +79,6 @@ Stack2* stack2_pop(Stack2 *stack) {
     }
     Stack2 *newTop = stack->next;
     free(stack);
-    if (newTop != NULL) newTop->size--;
     return newTop;
 }
 

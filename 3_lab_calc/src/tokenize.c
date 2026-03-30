@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 
 char **tokenize(char *line) {
@@ -19,19 +18,16 @@ char **tokenize(char *line) {
             tokens[j][1] = '\0';
             j++;
             i++;
-        } else if (isalnum(line[i])) {
+        } else {
             int k = 0;
             tokens[j] = malloc(sizeof(char) * 100);
-            while (isalnum(line[i])) {
+            while (line[i] != '\0' && line[i] != ' ' && strchr("+-*/^()", line[i]) == NULL) {
                 tokens[j][k] = line[i];
                 k++;
                 i++;
             }
             tokens[j][k] = '\0';
             j++;
-        } else {
-            free(tokens);
-            return NULL;
         }
     }
     tokens[j] = NULL;

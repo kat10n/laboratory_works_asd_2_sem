@@ -7,7 +7,7 @@ typedef struct Stack{
 }Stack;
 
 typedef struct Node{
-	char data;
+	char *data;
     struct Node *right;
     struct Node *left;
 }Node;

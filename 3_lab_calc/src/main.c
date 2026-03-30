@@ -1,36 +1,74 @@
 #include "struct.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include "enter.h"
-#include "tokenize.h"
 #include "reverse_polish_notation.h"
 #include "mini_calculator.h"
-#include "struct.h"
+
+void setup_utf8() {
+#ifdef _WIN32
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+#endif
+}
+
+// Простая функция: печатает дерево в инфиксной форме без скобок
+void print_tree_infix(Node *n) {
+    if (!n) return;
+    if (n->data && (n->data[0] == '+' || n->data[0] == '-' ||
+                    n->data[0] == '*' || n->data[0] == '/' ||
+                    n->data[0] == '%' || n->data[0] == '^')) {
+        print_tree_infix(n->left);
+        printf(" %s ", n->data);
+        print_tree_infix(n->right);
+                    } else {
+                        printf("%s", n->data);
+                    }
+}
 
 int main() {
-    char *line = enter();
-    
-    if (!validation(line)) {
-        printf("Ошибка в выражении\n");
-        return 1;
+    setup_utf8();
+    while (1) {
+        char *line;
+        char *rpn;
+        Node *tree;
+
+        printf("Введите выражение или exit для выхода: ");
+        line = enter();
+        if (line == NULL) break;
+        if (strcmp(line, "exit") == 0) {
+            free(line);
+            break;
+        }
+        if (line[0] == '\0') {
+            free(line);
+            continue;
+        }
+        if (!validation(line)) {
+            printf("выражение не прошло валидацию, введите корректное выражение\n");
+            free(line);
+            continue;
+        }
+
+        rpn = reverse_polish_notation(line);
+        printf("ОПЗ: %s\n", rpn);
+
+        tree = make_tree(rpn);
+        printf("Дерево:\n");
+        print_tree(tree, 0);
+
+        tree = simplify_multiplication(tree);
+        printf("Результат: ");
+        print_tree_infix(tree);
+        printf("\n");
+
+        free(line);
+        free(rpn);
+        free_tree(tree);
     }
-
-    char **tokens = tokenize(line);
-
-    char *rpn = reverse_polish_notation(line);
-    printf("RPN: %s\n", rpn);
-
-    Node *tree = make_tree(rpn);//make_tree надо переделать чтобы возвращала Node*
-
-    printf("Дерево до:\n");
-    print_tree(tree, 0);
-
-    Node *result = distribute(tree);
-
-    printf("Дерево после:\n");
-    print_tree(result, 0);
-
-    free(line);
-    free(rpn);
     return 0;
 }
