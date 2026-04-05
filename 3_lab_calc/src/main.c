@@ -16,7 +16,6 @@ void setup_utf8() {
 #endif
 }
 
-// Простая функция: печатает дерево в инфиксной форме без скобок
 void print_tree_infix(Node *n) {
     if (!n) return;
     if (n->data && (n->data[0] == '+' || n->data[0] == '-' ||
@@ -33,21 +32,14 @@ void print_tree_infix(Node *n) {
 int main() {
     setup_utf8();
     while (1) {
-        char *line;
-        char *rpn;
+        char *line, *rpn;
         Node *tree;
 
         printf("Введите выражение или exit для выхода: ");
         line = enter();
         if (line == NULL) break;
-        if (strcmp(line, "exit") == 0) {
-            free(line);
-            break;
-        }
-        if (line[0] == '\0') {
-            free(line);
-            continue;
-        }
+        if (strcmp(line, "exit") == 0) { free(line); break; }
+        if (line[0] == '\0') { free(line); continue; }
         if (!validation(line)) {
             printf("выражение не прошло валидацию, введите корректное выражение\n");
             free(line);
@@ -61,6 +53,7 @@ int main() {
         printf("Дерево:\n");
         print_tree(tree, 0);
 
+        tree = expand_brackets(tree);
         tree = simplify_multiplication(tree);
         printf("Результат: ");
         print_tree_infix(tree);

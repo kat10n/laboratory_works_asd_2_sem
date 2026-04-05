@@ -17,8 +17,18 @@ void setup_utf8() {
 #endif
 }
 
+static char *process(char *expr) {
+    char *rpn  = reverse_polish_notation(expr);
+    Node *tree = make_tree(rpn);
+    tree = expand_brackets(tree);
+    tree = simplify_multiplication(tree);
+    char *result = tree_to_infix(tree);
+    free_tree(tree);
+    free(rpn);
+    return result;
+}
+
 void test_rpn_simple() {
-    printf("Test 1: simple RPN\n");
     char input[] = "1+2";
     char *rpn = reverse_polish_notation(input);
     assert(strcmp(rpn, "1 2 +") == 0);
@@ -26,7 +36,6 @@ void test_rpn_simple() {
 }
 
 void test_rpn_priority() {
-    printf("Test 2: multiplication priority\n");
     char input[] = "1+2*3";
     char *rpn = reverse_polish_notation(input);
     assert(strcmp(rpn, "1 2 3 * +") == 0);
@@ -34,64 +43,100 @@ void test_rpn_priority() {
 }
 
 void test_rpn_brackets() {
-    printf("Test 3: brackets\n");
     char input[] = "7*(3+4)-1";
     char *rpn = reverse_polish_notation(input);
     assert(strcmp(rpn, "7 3 4 + * 1 -") == 0);
     free(rpn);
 }
 
-void test_validation_mixed() {
-    printf("Test 4: validation\n");
-    assert(validation("3a") == 0);
-    assert(validation("3+a") == 1);
-    assert(validation("(3+1") == 0);
-    assert(validation("5+г") == 1);
-}
-
-void test_multiply_numbers() {
-    char *result;
-
-    printf("Test 5: multiply numeric chain\n");
-    char input[] = "7*6*j*k*4";
+void test_rpn_nested_brackets() {
+    char input[] = "(a+b)*(c+d)";
     char *rpn = reverse_polish_notation(input);
-    Node *tree = make_tree(rpn);
-    tree = simplify_multiplication(tree);
-    result = tree_to_infix(tree);
-
-    assert(strcmp(result, "168*j*k") == 0);
-
-    free(result);
-    free_tree(tree);
+    assert(strcmp(rpn, "a b + c d + *") == 0);
     free(rpn);
 }
 
-void test_multiply_coeff_rule() {
-    char *result;
-
-    printf("Test 6: multiply coeff rule\n");
-    char input[] = "10*k*2";
+void test_rpn_left_assoc() {
+    char input[] = "a+b+c";
     char *rpn = reverse_polish_notation(input);
-    Node *tree = make_tree(rpn);
-    tree = simplify_multiplication(tree);
-    result = tree_to_infix(tree);
-
-    assert(strcmp(result, "20*k") == 0);
-
-    free(result);
-    free_tree(tree);
+    assert(strcmp(rpn, "a b + c +") == 0);
     free(rpn);
+}
+
+void test_validation() {
+    assert(validation("3a")    == 0);
+    assert(validation("3+a")   == 1);
+    assert(validation("(3+1")  == 0);
+    assert(validation("3+1)")  == 0);
+    assert(validation("a*b+c") == 1);
+    assert(validation("")      == 1);
+}
+
+void test_simplify_chain() {
+    char *r = process("7*6*j*k*4");
+    assert(strcmp(r, "168*j*k") == 0);
+    free(r);
+}
+
+void test_simplify_pure_nums() {
+    char *r = process("3*4*5");
+    assert(strcmp(r, "60") == 0);
+    free(r);
+}
+
+void test_simplify_single_var() {
+    char *r = process("1*x*1");
+    assert(strcmp(r, "x") == 0);
+    free(r);
+}
+
+void test_expand_right() {
+    char *r = process("a*(b+c)");
+    assert(strcmp(r, "a*b+a*c") == 0);
+    free(r);
+}
+
+void test_expand_left() {
+    char *r = process("(a+b)*c");
+    assert(strcmp(r, "a*c+b*c") == 0);
+    free(r);
+}
+
+void test_expand_subtract() {
+    char *r = process("(a-b)*c");
+    assert(strcmp(r, "a*c-b*c") == 0);
+    free(r);
+}
+
+void test_expand_with_nums() {
+    char *r = process("2*(a+3)");
+    assert(strcmp(r, "2*a+6") == 0);
+    free(r);
+}
+
+void test_expand_coeff() {
+    char *r = process("3*(2*a+b)");
+    assert(strcmp(r, "6*a+3*b") == 0);
+    free(r);
 }
 
 int main() {
     setup_utf8();
+
     test_rpn_simple();
     test_rpn_priority();
     test_rpn_brackets();
-    test_validation_mixed();
-    test_multiply_numbers();
-    test_multiply_coeff_rule();
-
-    printf("All tests passed!\n");
+    test_rpn_nested_brackets();
+    test_rpn_left_assoc();
+    test_validation();
+    test_simplify_chain();
+    test_simplify_pure_nums();
+    test_simplify_single_var();
+    test_expand_right();
+    test_expand_left();
+    test_expand_subtract();
+    test_expand_with_nums();
+    test_expand_coeff();
+    printf("Все тесты работают!\n");
     return 0;
 }

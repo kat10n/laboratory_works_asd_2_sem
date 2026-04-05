@@ -27,6 +27,66 @@ void free_tree(Node *n) {
     free(n);
 }
 
+Node *copy_tree(Node *n) {
+    if (!n) return NULL;
+    Node *copy = create_node(n->data);
+    copy->left  = copy_tree(n->left);
+    copy->right = copy_tree(n->right);
+    return copy;
+}
+
+Node *expand_brackets(Node *root) {
+    if (!root) return NULL;
+    root->left  = expand_brackets(root->left);
+    root->right = expand_brackets(root->right);
+
+    if (root->data[0] != '*') return root;
+
+    Node *L = root->left, *R = root->right;
+
+    // a * (b + c)
+    if (R->data[0] == '+' || R->data[0] == '-') {
+        Node *mul1 = create_node("*");
+        mul1->left  = copy_tree(L);
+        mul1->right = R->left;
+
+        Node *mul2 = create_node("*");
+        mul2->left  = L;
+        mul2->right = R->right;
+
+        char op[2] = {R->data[0], '\0'};
+        Node *result = create_node(op);
+        result->left  = mul1;
+        result->right = mul2;
+
+        free(R->data); free(R);
+        free(root->data); free(root);
+        return expand_brackets(result);
+    }
+
+    // (a + b) * c
+    if (L->data[0] == '+' || L->data[0] == '-') {
+        Node *mul1 = create_node("*");
+        mul1->left  = L->left;
+        mul1->right = copy_tree(R);
+
+        Node *mul2 = create_node("*");
+        mul2->left  = L->right;
+        mul2->right = R;
+
+        char op[2] = {L->data[0], '\0'};
+        Node *result = create_node(op);
+        result->left  = mul1;
+        result->right = mul2;
+
+        free(L->data); free(L);
+        free(root->data); free(root);
+        return expand_brackets(result);
+    }
+
+    return root;
+}
+
 static void collect_factors(Node *n, int *prod, Node **vars, int *count) {
     if (!n) return;
     if (n->data[0] == '*') {
@@ -42,7 +102,6 @@ static void collect_factors(Node *n, int *prod, Node **vars, int *count) {
     }
 }
 
-// Собирает дерево умножений из переменных факторов и числового коэффициента.
 static Node *build_mul_tree(Node **vars, int count, int prod) {
     if (count == 0) return make_number_node(prod);
 
@@ -62,8 +121,6 @@ static Node *build_mul_tree(Node **vars, int count, int prod) {
     return result;
 }
 
-// Упрощает умножение в дереве: схлопывает числовые множители в одно число.
-// Пример: 7 * 6 * j * k * 4  →  168 * j * k
 Node *simplify_multiplication(Node *root) {
     if (!root) return NULL;
     root->left  = simplify_multiplication(root->left);
@@ -78,15 +135,14 @@ Node *simplify_multiplication(Node *root) {
     return build_mul_tree(vars, count, prod);
 }
 
-// Записывает дерево как инфиксное выражение без пробелов и скобок.
 static void to_infix(Node *n, char *buf, int *len) {
     if (!n) return;
-    if (n->left) { // узел-оператор
+    if (n->left) {
         to_infix(n->left, buf, len);
         buf[(*len)++] = n->data[0];
         buf[*len] = '\0';
         to_infix(n->right, buf, len);
-    } else { // лист
+    } else {
         int slen = strlen(n->data);
         memcpy(buf + *len, n->data, slen + 1);
         *len += slen;
