@@ -20,8 +20,7 @@ void setup_utf8() {
 static char *process(char *expr) {
     char *rpn  = reverse_polish_notation(expr);
     Node *tree = make_tree(rpn);
-    tree = expand_brackets(tree);
-    tree = simplify_multiplication(tree);
+    tree = simplify(tree);
     char *result = tree_to_infix(tree);
     free_tree(tree);
     free(rpn);

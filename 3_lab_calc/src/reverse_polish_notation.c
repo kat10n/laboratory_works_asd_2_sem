@@ -1,5 +1,6 @@
 #include "struct.h"
 #include "reverse_polish_notation.h"
+#include "dynstr.h"
 #include "stack.h"
 #include "tokenize.h"
 #include <stdio.h>
@@ -24,73 +25,50 @@ int priority(char op) {
 	return -1;
 }
 
-static void buf_append(char **buf, int *len, int *cap, const char *s) {
-	int slen = (int)strlen(s);
-	while (*len + slen + 1 > *cap) {
-		*cap *= 2;
-		char *tmp = realloc(*buf, *cap);
-		if (!tmp) {
-			printf("Ошибка выделения памяти\n");
-			return;
-		}
-		*buf = tmp;
-	}
-	memcpy(*buf + *len, s, slen + 1); /* копируем вместе с '\0' */
-	*len += slen;
+/* Добавляет пробел-разделитель (если буфер не пустой), затем выталкивает
+   оператор с вершины стека в выходную строку. */
+static void flush_op(Stack **stack, DynStr *buf) {
+	if (buf->len > 0) dynstr_append(buf, " ");
+	char op[2] = {stack_peek(*stack), '\0'};
+	dynstr_append(buf, op);
+	*stack = stack_pop(*stack);
 }
 
 char *reverse_polish_notation(char *line) {
 	char **tokens = tokenize(line);
-	Stack *stack = stack_create();
-	int cap = 64, len = 0;
-	char *buf = malloc(cap);
-	if (!buf) {
-		printf("Ошибка выделения памяти\n");
-		free(tokens);
-		return NULL;
-	}
-	buf[0] = '\0';
-
-	char op[2] = {0, 0};
+	Stack  *stack = stack_create();
+	DynStr  buf   = dynstr_create();
 
 	for (int i = 0; tokens[i] != NULL; i++) {
 		char *tok = tokens[i];
+
 		if (is_operator(tok)) {
 			while (!stack_is_empty(stack) && stack_peek(stack) != '(' &&
-			       priority(stack_peek(stack)) >= priority(tok[0])) {
-				if (len > 0) buf_append(&buf, &len, &cap, " ");
-				op[0] = stack_peek(stack);
-				buf_append(&buf, &len, &cap, op);
-				stack = stack_pop(stack);
-			}
+			       priority(stack_peek(stack)) >= priority(tok[0]))
+				flush_op(&stack, &buf);
 			stack = stack_push(stack, tok[0]);
+
 		} else if (tok[0] == '(') {
 			stack = stack_push(stack, '(');
+
 		} else if (tok[0] == ')') {
-			while (!stack_is_empty(stack) && stack_peek(stack) != '(') {
-				if (len > 0) buf_append(&buf, &len, &cap, " ");
-				op[0] = stack_peek(stack);
-				buf_append(&buf, &len, &cap, op);
-				stack = stack_pop(stack);
-			}
+			while (!stack_is_empty(stack) && stack_peek(stack) != '(')
+				flush_op(&stack, &buf);
 			if (!stack_is_empty(stack))
 				stack = stack_pop(stack); /* убираем '(' */
+
 		} else {
-			if (len > 0) buf_append(&buf, &len, &cap, " ");
-			buf_append(&buf, &len, &cap, tok);
+			if (buf.len > 0) dynstr_append(&buf, " ");
+			dynstr_append(&buf, tok);
 		}
 		free(tok);
 	}
 	free(tokens);
 
-	while (!stack_is_empty(stack)) {
-		if (len > 0) buf_append(&buf, &len, &cap, " ");
-		op[0] = stack_peek(stack);
-		buf_append(&buf, &len, &cap, op);
-		stack = stack_pop(stack);
-	}
+	while (!stack_is_empty(stack))
+		flush_op(&stack, &buf);
 
-	return buf;
+	return dynstr_take(&buf);
 }
 
 Node *make_tree(char *rpn) {

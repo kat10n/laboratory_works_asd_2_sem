@@ -1,9 +1,9 @@
 #include "struct.h"
 #include "mini_calculator.h"
+#include "dynstr.h"
 #include "reverse_polish_notation.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 
 int is_number_node(Node *n) {
@@ -29,63 +29,16 @@ void free_tree(Node *n) {
 
 Node *copy_tree(Node *n) {
     if (!n) return NULL;
-    Node *copy = create_node(n->data);
-    copy->left  = copy_tree(n->left);
-    copy->right = copy_tree(n->right);
+    Node *copy   = create_node(n->data);
+    copy->left   = copy_tree(n->left);
+    copy->right  = copy_tree(n->right);
     return copy;
 }
 
-Node *expand_brackets(Node *root) {
-    if (!root) return NULL;
-    root->left  = expand_brackets(root->left);
-    root->right = expand_brackets(root->right);
-
-    if (root->data[0] != '*') return root;
-
-    Node *L = root->left, *R = root->right;
-
-    // a * (b + c)
-    if (R->data[0] == '+' || R->data[0] == '-') {
-        Node *mul1 = create_node("*");
-        mul1->left  = copy_tree(L);
-        mul1->right = R->left;
-
-        Node *mul2 = create_node("*");
-        mul2->left  = L;
-        mul2->right = R->right;
-
-        char op[2] = {R->data[0], '\0'};
-        Node *result = create_node(op);
-        result->left  = mul1;
-        result->right = mul2;
-
-        free(R->data); free(R);
-        free(root->data); free(root);
-        return expand_brackets(result);
-    }
-
-    // (a + b) * c
-    if (L->data[0] == '+' || L->data[0] == '-') {
-        Node *mul1 = create_node("*");
-        mul1->left  = L->left;
-        mul1->right = copy_tree(R);
-
-        Node *mul2 = create_node("*");
-        mul2->left  = L->right;
-        mul2->right = R;
-
-        char op[2] = {L->data[0], '\0'};
-        Node *result = create_node(op);
-        result->left  = mul1;
-        result->right = mul2;
-
-        free(L->data); free(L);
-        free(root->data); free(root);
-        return expand_brackets(result);
-    }
-
-    return root;
+static int is_sum(Node *n) {
+    return n->data[0] == '+' || n->data[0] == '-';
 }
+
 
 static void collect_factors(Node *n, int *prod, Node ***vars, int *count, int *cap) {
     if (!n) return;
@@ -100,11 +53,8 @@ static void collect_factors(Node *n, int *prod, Node ***vars, int *count, int *c
     } else {
         if (*count >= *cap) {
             *cap *= 2;
-            Node **tmp = realloc(*vars, sizeof(Node *)*(*cap));
-            if (!tmp) {
-                printf("Ошибка выделения памяти\n");
-                return;
-            }
+            Node **tmp = realloc(*vars, sizeof(Node *) * (*cap));
+            if (!tmp) { printf("Ошибка выделения памяти\n"); return; }
             *vars = tmp;
         }
         (*vars)[(*count)++] = n;
@@ -113,16 +63,15 @@ static void collect_factors(Node *n, int *prod, Node ***vars, int *count, int *c
 
 static Node *build_mul_tree(Node **vars, int count, int prod) {
     if (count == 0) return make_number_node(prod);
-
     Node *result = vars[0];
     for (int i = 1; i < count; i++) {
-        Node *mul = create_node("*");
+        Node *mul  = create_node("*");
         mul->left  = result;
         mul->right = vars[i];
         result = mul;
     }
     if (prod != 1) {
-        Node *mul = create_node("*");
+        Node *mul  = create_node("*");
         mul->left  = make_number_node(prod);
         mul->right = result;
         result = mul;
@@ -130,61 +79,83 @@ static Node *build_mul_tree(Node **vars, int count, int prod) {
     return result;
 }
 
-Node *simplify_multiplication(Node *root) {
-    if (!root) return NULL;
-    root->left  = simplify_multiplication(root->left);
-    root->right = simplify_multiplication(root->right);
-
-    if (!root->data || root->data[0] != '*') return root;
-
-    int prod  = 1;
-    int cap   = 8;
-    int count = 0;
+static Node *collapse_mul(Node *root) {
+    int prod = 1, cap = 8, count = 0;
     Node **vars = malloc(sizeof(Node *) * cap);
-    if (!vars) {
-        printf("Ошибка выделения памяти\n");
-        return root;
-    }
+    if (!vars) { printf("Ошибка выделения памяти\n"); return root; }
     collect_factors(root, &prod, &vars, &count, &cap);
     Node *result = build_mul_tree(vars, count, prod);
     free(vars);
     return result;
 }
 
-static void to_infix(Node *n, char **buf, int *len, int *cap) {
+Node *simplify(Node *root) {
+    if (!root) return NULL;
+
+    root->left  = simplify(root->left);
+    root->right = simplify(root->right);
+
+    if (root->data[0] != '*') return root;
+
+    Node *L = root->left, *R = root->right;
+
+    //a * (b +- c)
+    if (is_sum(R)) {
+        Node *mul1  = create_node("*");
+        mul1->left  = copy_tree(L);
+        mul1->right = R->left;
+
+        Node *mul2  = create_node("*");
+        mul2->left  = L;
+        mul2->right = R->right;
+
+        char op[2]    = {R->data[0], '\0'};
+        Node *result  = create_node(op);
+        result->left  = mul1;
+        result->right = mul2;
+
+        free(R->data); free(R);
+        free(root->data); free(root);
+        return simplify(result);
+    }
+
+    //(a +- b) * c
+    if (is_sum(L)) {
+        Node *mul1  = create_node("*");
+        mul1->left  = L->left;
+        mul1->right = copy_tree(R);
+
+        Node *mul2  = create_node("*");
+        mul2->left  = L->right;
+        mul2->right = R;
+
+        char op[2]    = {L->data[0], '\0'};
+        Node *result  = create_node(op);
+        result->left  = mul1;
+        result->right = mul2;
+
+        free(L->data); free(L);
+        free(root->data); free(root);
+        return simplify(result);
+    }
+
+    return collapse_mul(root);
+}
+
+//вывод дерева в инфиксную строку
+static void to_infix(Node *n, DynStr *buf) {
     if (!n) return;
     if (n->left) {
-        to_infix(n->left, buf, len, cap);
-        if (*len + 2 > *cap) {
-            *cap *= 2;
-            char *tmp = realloc(*buf, *cap);
-            if (!tmp) { printf("Ошибка выделения памяти\n"); return; }
-            *buf = tmp;
-        }
-        (*buf)[(*len)++] = n->data[0];
-        (*buf)[*len] = '\0';
-        to_infix(n->right, buf, len, cap);
+        to_infix(n->left, buf);
+        dynstr_append_char(buf, n->data[0]);
+        to_infix(n->right, buf);
     } else {
-        int slen = (int)strlen(n->data);
-        while (*len + slen + 1 > *cap) {
-            *cap *= 2;
-            char *tmp = realloc(*buf, *cap);
-            if (!tmp) { printf("Ошибка выделения памяти\n"); return; }
-            *buf = tmp;
-        }
-        memcpy(*buf + *len, n->data, slen + 1);
-        *len += slen;
+        dynstr_append(buf, n->data);
     }
 }
 
 char *tree_to_infix(Node *n) {
-    int cap = 64, len = 0;
-    char *buf = malloc(cap);
-    if (!buf) {
-        printf("Ошибка выделения памяти\n");
-        return NULL;
-    }
-    buf[0] = '\0';
-    to_infix(n, &buf, &len, &cap);
-    return buf;
+    DynStr buf = dynstr_create();
+    to_infix(n, &buf);
+    return dynstr_take(&buf);
 }

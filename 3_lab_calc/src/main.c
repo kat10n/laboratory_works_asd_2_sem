@@ -53,8 +53,7 @@ int main() {
         printf("Дерево:\n");
         print_tree(tree, 0);
 
-        tree = expand_brackets(tree);
-        tree = simplify_multiplication(tree);
+        tree = simplify(tree);
         printf("Результат: ");
         print_tree_infix(tree);
         printf("\n");

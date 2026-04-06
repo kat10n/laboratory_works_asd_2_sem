@@ -1,8 +1,8 @@
-all: stack.o enter.o tokenize.o reverse_polish_notation.o mini_calculator.o main.o
-	gcc -o main stack.o enter.o tokenize.o reverse_polish_notation.o mini_calculator.o main.o
+all: stack.o enter.o tokenize.o dynstr.o reverse_polish_notation.o mini_calculator.o main.o
+	gcc -o main stack.o enter.o tokenize.o dynstr.o reverse_polish_notation.o mini_calculator.o main.o
 
-tests: stack.o enter.o tokenize.o reverse_polish_notation.o mini_calculator.o tests.o
-	gcc -o tests stack.o enter.o tokenize.o reverse_polish_notation.o mini_calculator.o tests.o
+tests: stack.o enter.o tokenize.o dynstr.o reverse_polish_notation.o mini_calculator.o tests.o
+	gcc -o tests stack.o enter.o tokenize.o dynstr.o reverse_polish_notation.o mini_calculator.o tests.o
 
 stack.o: src/stack.c
 	gcc -c src/stack.c
@@ -12,6 +12,9 @@ enter.o: src/enter.c
 
 tokenize.o: src/tokenize.c
 	gcc -c src/tokenize.c
+
+dynstr.o: src/dynstr.c
+	gcc -c src/dynstr.c
 
 reverse_polish_notation.o: src/reverse_polish_notation.c
 	gcc -c src/reverse_polish_notation.c
