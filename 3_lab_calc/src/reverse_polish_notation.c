@@ -24,10 +24,33 @@ int priority(char op) {
 	return -1;
 }
 
+static void buf_append(char **buf, int *len, int *cap, const char *s) {
+	int slen = (int)strlen(s);
+	while (*len + slen + 1 > *cap) {
+		*cap *= 2;
+		char *tmp = realloc(*buf, *cap);
+		if (!tmp) {
+			printf("Ошибка выделения памяти\n");
+			return;
+		}
+		*buf = tmp;
+	}
+	memcpy(*buf + *len, s, slen + 1); /* копируем вместе с '\0' */
+	*len += slen;
+}
+
 char *reverse_polish_notation(char *line) {
 	char **tokens = tokenize(line);
 	Stack *stack = stack_create();
-	char buf[1024] = "";
+	int cap = 64, len = 0;
+	char *buf = malloc(cap);
+	if (!buf) {
+		printf("Ошибка выделения памяти\n");
+		free(tokens);
+		return NULL;
+	}
+	buf[0] = '\0';
+
 	char op[2] = {0, 0};
 
 	for (int i = 0; tokens[i] != NULL; i++) {
@@ -35,9 +58,9 @@ char *reverse_polish_notation(char *line) {
 		if (is_operator(tok)) {
 			while (!stack_is_empty(stack) && stack_peek(stack) != '(' &&
 			       priority(stack_peek(stack)) >= priority(tok[0])) {
-				if (buf[0]) strcat(buf, " ");
+				if (len > 0) buf_append(&buf, &len, &cap, " ");
 				op[0] = stack_peek(stack);
-				strcat(buf, op);
+				buf_append(&buf, &len, &cap, op);
 				stack = stack_pop(stack);
 			}
 			stack = stack_push(stack, tok[0]);
@@ -45,29 +68,29 @@ char *reverse_polish_notation(char *line) {
 			stack = stack_push(stack, '(');
 		} else if (tok[0] == ')') {
 			while (!stack_is_empty(stack) && stack_peek(stack) != '(') {
-				if (buf[0]) strcat(buf, " ");
+				if (len > 0) buf_append(&buf, &len, &cap, " ");
 				op[0] = stack_peek(stack);
-				strcat(buf, op);
+				buf_append(&buf, &len, &cap, op);
 				stack = stack_pop(stack);
 			}
 			if (!stack_is_empty(stack))
-				stack = stack_pop(stack); // убираем '('
+				stack = stack_pop(stack); /* убираем '(' */
 		} else {
-			if (buf[0]) strcat(buf, " ");
-			strcat(buf, tok);
+			if (len > 0) buf_append(&buf, &len, &cap, " ");
+			buf_append(&buf, &len, &cap, tok);
 		}
 		free(tok);
 	}
 	free(tokens);
 
 	while (!stack_is_empty(stack)) {
-		if (buf[0]) strcat(buf, " ");
+		if (len > 0) buf_append(&buf, &len, &cap, " ");
 		op[0] = stack_peek(stack);
-		strcat(buf, op);
+		buf_append(&buf, &len, &cap, op);
 		stack = stack_pop(stack);
 	}
 
-	return strdup(buf);
+	return buf;
 }
 
 Node *make_tree(char *rpn) {

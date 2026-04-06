@@ -87,18 +87,27 @@ Node *expand_brackets(Node *root) {
     return root;
 }
 
-static void collect_factors(Node *n, int *prod, Node **vars, int *count) {
+static void collect_factors(Node *n, int *prod, Node ***vars, int *count, int *cap) {
     if (!n) return;
     if (n->data[0] == '*') {
         Node *left = n->left, *right = n->right;
         free(n->data); free(n);
-        collect_factors(left,  prod, vars, count);
-        collect_factors(right, prod, vars, count);
+        collect_factors(left,  prod, vars, count, cap);
+        collect_factors(right, prod, vars, count, cap);
     } else if (is_number_node(n)) {
         *prod *= atoi(n->data);
         free_tree(n);
     } else {
-        vars[(*count)++] = n;
+        if (*count >= *cap) {
+            *cap *= 2;
+            Node **tmp = realloc(*vars, sizeof(Node *)*(*cap));
+            if (!tmp) {
+                printf("Ошибка выделения памяти\n");
+                return;
+            }
+            *vars = tmp;
+        }
+        (*vars)[(*count)++] = n;
     }
 }
 
@@ -128,31 +137,54 @@ Node *simplify_multiplication(Node *root) {
 
     if (!root->data || root->data[0] != '*') return root;
 
-    int prod = 1;
-    Node *vars[64];
+    int prod  = 1;
+    int cap   = 8;
     int count = 0;
-    collect_factors(root, &prod, vars, &count);
-    return build_mul_tree(vars, count, prod);
+    Node **vars = malloc(sizeof(Node *) * cap);
+    if (!vars) {
+        printf("Ошибка выделения памяти\n");
+        return root;
+    }
+    collect_factors(root, &prod, &vars, &count, &cap);
+    Node *result = build_mul_tree(vars, count, prod);
+    free(vars);
+    return result;
 }
 
-static void to_infix(Node *n, char *buf, int *len) {
+static void to_infix(Node *n, char **buf, int *len, int *cap) {
     if (!n) return;
     if (n->left) {
-        to_infix(n->left, buf, len);
-        buf[(*len)++] = n->data[0];
-        buf[*len] = '\0';
-        to_infix(n->right, buf, len);
+        to_infix(n->left, buf, len, cap);
+        if (*len + 2 > *cap) {
+            *cap *= 2;
+            char *tmp = realloc(*buf, *cap);
+            if (!tmp) { printf("Ошибка выделения памяти\n"); return; }
+            *buf = tmp;
+        }
+        (*buf)[(*len)++] = n->data[0];
+        (*buf)[*len] = '\0';
+        to_infix(n->right, buf, len, cap);
     } else {
-        int slen = strlen(n->data);
-        memcpy(buf + *len, n->data, slen + 1);
+        int slen = (int)strlen(n->data);
+        while (*len + slen + 1 > *cap) {
+            *cap *= 2;
+            char *tmp = realloc(*buf, *cap);
+            if (!tmp) { printf("Ошибка выделения памяти\n"); return; }
+            *buf = tmp;
+        }
+        memcpy(*buf + *len, n->data, slen + 1);
         *len += slen;
     }
 }
 
 char *tree_to_infix(Node *n) {
-    char *buf = malloc(1024);
-    int len = 0;
+    int cap = 64, len = 0;
+    char *buf = malloc(cap);
+    if (!buf) {
+        printf("Ошибка выделения памяти\n");
+        return NULL;
+    }
     buf[0] = '\0';
-    to_infix(n, buf, &len);
+    to_infix(n, &buf, &len, &cap);
     return buf;
 }
