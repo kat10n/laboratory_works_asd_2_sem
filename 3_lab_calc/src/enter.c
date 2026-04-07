@@ -18,7 +18,7 @@ int validation(char *line) {
     int i = 0, brackets = 0, numbers = 0, letters = 0;
     
     while (i < (int)strlen(line) && line[i] != '\n') {
-        unsigned char symbol = (unsigned char)line[i];
+        unsigned char symbol = (unsigned char)line[i]; //для isdigit и isalpha
 
         if (line[i] == ' ') {
             numbers = 0;

@@ -77,6 +77,7 @@ Node *simplify(Node *root) {
 
     Node *L = root->left, *R = root->right;
 
+    // a*(b +- c)  -> a*b +- a*c
     if (is_sum(R)) {
         Node *mul1  = create_node("*");
         mul1->left  = copy_tree(L);
@@ -95,7 +96,7 @@ Node *simplify(Node *root) {
         free(root->data); free(root);
         return simplify(result);
     }
-
+    // (a +- b) * c  ->  a*c +- b*c
     if (is_sum(L)) {
         Node *mul1  = create_node("*");
         mul1->left  = L->left;
