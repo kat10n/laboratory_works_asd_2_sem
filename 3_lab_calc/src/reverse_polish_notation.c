@@ -25,8 +25,6 @@ int priority(char op) {
 	return -1;
 }
 
-/* Добавляет пробел-разделитель (если буфер не пустой), затем выталкивает
-   оператор с вершины стека в выходную строку. */
 static void flush_op(Stack **stack, DynStr *buf) {
 	if (buf->len > 0) dynstr_append(buf, " ");
 	char op[2] = {stack_peek(*stack), '\0'};
@@ -55,7 +53,7 @@ char *reverse_polish_notation(char *line) {
 			while (!stack_is_empty(stack) && stack_peek(stack) != '(')
 				flush_op(&stack, &buf);
 			if (!stack_is_empty(stack))
-				stack = stack_pop(stack); /* убираем '(' */
+				stack = stack_pop(stack); 
 
 		} else {
 			if (buf.len > 0) dynstr_append(&buf, " ");
