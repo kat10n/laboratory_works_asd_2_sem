@@ -52,8 +52,18 @@ static Node *mul_strip_nums(Node *n) {
     }
     n->left  = mul_strip_nums(n->left);
     n->right = mul_strip_nums(n->right);
-    if (!n->left)  { Node *r = n->right; free(n->data); free(n); return r; }
-    if (!n->right) { Node *l = n->left;  free(n->data); free(n); return l; }
+    if (!n->left)  { 
+        Node *r = n->right; 
+        free(n->data); 
+        free(n); 
+        return r; 
+    }
+    if (!n->right) { 
+        Node *l = n->left;  
+        free(n->data); 
+        free(n);
+        return l; 
+    }
     return n;
 }
 
