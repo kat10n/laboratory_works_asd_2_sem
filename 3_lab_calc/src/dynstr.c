@@ -1,7 +1,7 @@
 #include "dynstr.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #define DYNSTR_INIT_CAP 64
 
@@ -42,11 +42,4 @@ char *dynstr_take(DynStr *s) {
     s->len  = 0;
     s->cap  = 0;
     return result;
-}
-
-void dynstr_free(DynStr *s) {
-    free(s->data);
-    s->data = NULL;
-    s->len  = 0;
-    s->cap  = 0;
 }

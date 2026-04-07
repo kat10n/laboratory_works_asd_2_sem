@@ -13,7 +13,7 @@ enter.o: src/enter.c
 tokenize.o: src/tokenize.c
 	gcc -c src/tokenize.c
 
-dynstr.o: src/dynstr.c
+dynstr.o: src/Dynstr.c
 	gcc -c src/dynstr.c
 
 reverse_polish_notation.o: src/reverse_polish_notation.c

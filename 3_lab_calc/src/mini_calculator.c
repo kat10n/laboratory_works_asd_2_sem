@@ -2,9 +2,9 @@
 #include "mini_calculator.h"
 #include "dynstr.h"
 #include "reverse_polish_notation.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdio.h>
 
 int is_number_node(Node *n) {
     if (!n || !n->data) return 0;
@@ -29,9 +29,9 @@ void free_tree(Node *n) {
 
 Node *copy_tree(Node *n) {
     if (!n) return NULL;
-    Node *copy   = create_node(n->data);
-    copy->left   = copy_tree(n->left);
-    copy->right  = copy_tree(n->right);
+    Node *copy  = create_node(n->data);
+    copy->left  = copy_tree(n->left);
+    copy->right = copy_tree(n->right);
     return copy;
 }
 
@@ -39,59 +39,37 @@ static int is_sum(Node *n) {
     return n->data[0] == '+' || n->data[0] == '-';
 }
 
-
-static void collect_factors(Node *n, int *prod, Node ***vars, int *count, int *cap) {
-    if (!n) return;
-    if (n->data[0] == '*') {
-        Node *left = n->left, *right = n->right;
-        free(n->data); free(n);
-        collect_factors(left,  prod, vars, count, cap);
-        collect_factors(right, prod, vars, count, cap);
-    } else if (is_number_node(n)) {
-        *prod *= atoi(n->data);
-        free_tree(n);
-    } else {
-        if (*count >= *cap) {
-            *cap *= 2;
-            Node **tmp = realloc(*vars, sizeof(Node *) * (*cap));
-            if (!tmp) { printf("Ошибка выделения памяти\n"); return; }
-            *vars = tmp;
-        }
-        (*vars)[(*count)++] = n;
-    }
+static int mul_product(Node *n) {
+    if (n->data[0] == '*')
+        return mul_product(n->left) * mul_product(n->right);
+    return is_number_node(n) ? atoi(n->data) : 1;
 }
 
-static Node *build_mul_tree(Node **vars, int count, int prod) {
-    if (count == 0) return make_number_node(prod);
-    Node *result = vars[0];
-    for (int i = 1; i < count; i++) {
-        Node *mul  = create_node("*");
-        mul->left  = result;
-        mul->right = vars[i];
-        result = mul;
+static Node *mul_strip_nums(Node *n) {
+    if (n->data[0] != '*') {
+        if (is_number_node(n)) { free_tree(n); return NULL; }
+        return n;
     }
-    if (prod != 1) {
-        Node *mul  = create_node("*");
-        mul->left  = make_number_node(prod);
-        mul->right = result;
-        result = mul;
-    }
-    return result;
+    n->left  = mul_strip_nums(n->left);
+    n->right = mul_strip_nums(n->right);
+    if (!n->left)  { Node *r = n->right; free(n->data); free(n); return r; }
+    if (!n->right) { Node *l = n->left;  free(n->data); free(n); return l; }
+    return n;
 }
 
 static Node *collapse_mul(Node *root) {
-    int prod = 1, cap = 8, count = 0;
-    Node **vars = malloc(sizeof(Node *) * cap);
-    if (!vars) { printf("Ошибка выделения памяти\n"); return root; }
-    collect_factors(root, &prod, &vars, &count, &cap);
-    Node *result = build_mul_tree(vars, count, prod);
-    free(vars);
-    return result;
+    int   prod = mul_product(root);
+    Node *vars = mul_strip_nums(root);
+    if (!vars) return make_number_node(prod);
+    if (prod == 1) return vars;
+    Node *mul  = create_node("*");
+    mul->left  = make_number_node(prod);
+    mul->right = vars;
+    return mul;
 }
 
 Node *simplify(Node *root) {
     if (!root) return NULL;
-
     root->left  = simplify(root->left);
     root->right = simplify(root->right);
 
@@ -99,7 +77,6 @@ Node *simplify(Node *root) {
 
     Node *L = root->left, *R = root->right;
 
-    //a * (b +- c)
     if (is_sum(R)) {
         Node *mul1  = create_node("*");
         mul1->left  = copy_tree(L);
@@ -119,7 +96,6 @@ Node *simplify(Node *root) {
         return simplify(result);
     }
 
-    //(a +- b) * c
     if (is_sum(L)) {
         Node *mul1  = create_node("*");
         mul1->left  = L->left;
@@ -142,7 +118,6 @@ Node *simplify(Node *root) {
     return collapse_mul(root);
 }
 
-//вывод дерева в инфиксную строку
 static void to_infix(Node *n, DynStr *buf) {
     if (!n) return;
     if (n->left) {

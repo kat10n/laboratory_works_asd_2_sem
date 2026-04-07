@@ -1,72 +1,33 @@
 #include "struct.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-
 char **tokenize(char *line) {
-    int tok_arr_cap = 16;
-    char **tokens = malloc(sizeof(char *) * tok_arr_cap);
-    if (!tokens) {
-        printf("Ошибка выделения памяти\n");
-        return NULL;
-    }
+    int cap = 16, j = 0;
+    char **tokens = malloc(sizeof(char *) * cap);
 
-    int i = 0, j = 0;
-    while (line[i] != '\0') {
-        if (line[i] == ' ') {
-            i++;
-            continue;
-        }
-        if (j + 2 > tok_arr_cap) {
-            tok_arr_cap *= 2;
-            char **tmp = realloc(tokens, sizeof(char *) * tok_arr_cap);
-            if (!tmp) {
-                printf("Ошибка выделения памяти\n");
-                tokens[j] = NULL;
-                return tokens;
-            }
-            tokens = tmp;
-        }
+    for (int i = 0; line[i]; ) {
+        if (line[i] == ' ') { i++; continue; }
 
-        if (strchr("+-*/^()", line[i]) != NULL) {
-            tokens[j] = malloc(sizeof(char) * 2);
-            if (!tokens[j]) {
-                printf("Ошибка выделения памяти\n");
-                tokens[j] = NULL;
-                return tokens;
-            }
-            tokens[j][0] = line[i];
+        if (j + 2 > cap)
+            tokens = realloc(tokens, sizeof(char *) * (cap *= 2));
+
+        if (strchr("+-*/^()", line[i])) {
+            tokens[j] = malloc(2);
+            tokens[j][0] = line[i++];
             tokens[j][1] = '\0';
-            j++;
-            i++;
         } else {
-            int tok_cap = 16, k = 0;
-            tokens[j] = malloc(sizeof(char) * tok_cap);
-            if (!tokens[j]) {
-                printf("Ошибка выделения памяти\n");
-                tokens[j] = NULL;
-                return tokens;
-            }
-            while (line[i] != '\0' && line[i] != ' ' &&
-                   strchr("+-*/^()", line[i]) == NULL) {
-                /* +2: место под текущий символ и под '\0' */
-                if (k + 2 > tok_cap) {
-                    tok_cap *= 2;
-                    char *tmp = realloc(tokens[j], sizeof(char) * tok_cap);
-                    if (!tmp) {
-                        printf("Ошибка выделения памяти\n");
-                        break;
-                    }
-                    tokens[j] = tmp;
-                }
+            int k = 0, tcap = 16;
+            tokens[j] = malloc(tcap);
+            while (line[i] && line[i] != ' ' && !strchr("+-*/^()", line[i])) {
+                if (k + 2 > tcap)
+                    tokens[j] = realloc(tokens[j], tcap *= 2);
                 tokens[j][k++] = line[i++];
             }
             tokens[j][k] = '\0';
-            j++;
         }
+        j++;
     }
-
-    tokens[j] = NULL; /* sentinel */
+    tokens[j] = NULL;
     return tokens;
 }
