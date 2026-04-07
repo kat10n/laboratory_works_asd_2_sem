@@ -63,12 +63,12 @@ void test_rpn_left_assoc() {
 }
 
 void test_validation() {
-    assert(validation("3a")    == 0);
-    assert(validation("3+a")   == 1);
-    assert(validation("(3+1")  == 0);
-    assert(validation("3+1)")  == 0);
+    assert(validation("3a") == 0);
+    assert(validation("3+a") == 1);
+    assert(validation("(3+1") == 0);
+    assert(validation("3+1)") == 0);
     assert(validation("a*b+c") == 1);
-    assert(validation("")      == 1);
+    assert(validation("") == 1);
 }
 
 void test_simplify_chain() {
