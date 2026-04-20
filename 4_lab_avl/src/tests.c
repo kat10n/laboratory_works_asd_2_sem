@@ -5,7 +5,16 @@
 #include "struct.h"
 #include "avl_tree.h"
 #include "console_and_files.h"
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
+void setup_utf8() {
+#ifdef _WIN32
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+#endif
+}
 
 static int abs_val(int x) { return x < 0 ? -x : x; }
 
@@ -182,6 +191,7 @@ void test_remove_rebalance() {
 }
 
 int main() {
+    setup_utf8();
     test_insert_single();
     test_search_existing();
     test_search_missing();

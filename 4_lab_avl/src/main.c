@@ -15,7 +15,6 @@ void setup_utf8() {
 int main() {
     setup_utf8();
     Node* root = NULL;
-    process_file("files/input.txt", &root);
     process_stdin(&root);
     free_tree(root);
     return 0;
