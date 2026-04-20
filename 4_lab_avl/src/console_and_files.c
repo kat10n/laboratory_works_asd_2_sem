@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>   /* BUGFIX: добавлен include для free() */
+#include <stdlib.h>
 #include "struct.h"
 #include "avl_tree.h"
 
@@ -9,6 +9,12 @@ void process_file(const char* filename, Node** root) {
         printf("Ошибка открытия файла\n");
         return;
     }
+    FILE* out = fopen("files/output.txt", "w");
+    if (!out) {
+        printf("Ошибка открытия output.txt\n");
+        fclose(file);
+        return;
+    }
     int op;
     char key[7];
     double val;
@@ -16,25 +22,36 @@ void process_file(const char* filename, Node** root) {
     while (fscanf(file, "%d", &op) != EOF) {
         if (op == 1) { // добавление
             fscanf(file, "%6s %lf", key, &val);
+            fprintf(out, "1 %s %f\n", key, val);
             *root = insert(*root, key, val);
+            fprintf(out, "узел добавлен\n\n");
         } else if (op == 2) { // удаление
             fscanf(file, "%6s", key);
+            fprintf(out, "2 %s\n", key);
             *root = remove_node(*root, key);
+            fprintf(out, "узел удален\n\n");
         } else if (op == 3) { // печать
+            fprintf(out, "3\n");
             printTree(*root, 0);
+            printTreeToFile(*root, 0, out);
+            fprintf(out, "\n");
         } else if (op == 4) { // поиск
             fscanf(file, "%6s", key);
+            fprintf(out, "4 %s\n", key);
             Node* found = search(*root, key);
             if (found != NULL) {
                 printf("ключ: %s, значение: %f\n", found->key, found->value);
+                fprintf(out, "ключ: %s, значение: %f\n\n", found->key, found->value);
             } else {
                 printf("ключ %s не найден\n", key);
+                fprintf(out, "ключ %s не найден\n\n", key);
             }
         } else {
             break;
         }
     }
     fclose(file);
+    fclose(out);
 }
 
 void process_stdin(Node** root) {
@@ -77,6 +94,9 @@ void process_stdin(Node** root) {
                 }
                 break;
             case 0:
+                break;
+            default:
+                printf("такой команды нет");
                 break;
         }
         printf("Следующая команда: ");

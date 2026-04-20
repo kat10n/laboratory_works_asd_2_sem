@@ -140,3 +140,13 @@ void printTree(Node* root, int depth) {
     printTree(root->left, depth + 1);
     printTree(root->right, depth + 1);
 }
+
+void printTreeToFile(Node* root, int depth, FILE* out) {
+    if (root == NULL) return;
+    for (int i = 0; i < depth; i++) {
+        fprintf(out, "  ");
+    }
+    fprintf(out, "%s %f\n", root->key, root->value);
+    printTreeToFile(root->left, depth + 1, out);
+    printTreeToFile(root->right, depth + 1, out);
+}
