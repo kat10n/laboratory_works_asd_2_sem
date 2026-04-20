@@ -20,11 +20,9 @@ void process_file(const char* input_filename, const char* output_filename, Node*
             fprintf(out, "1 %s %.4f\n", key, val);
             if (search(*root, key) != NULL) {
                 fprintf(out, "Ошибка: ключ '%s' уже существует\n\n", key);
-                printf("Ошибка: ключ '%s' уже существует\n", key);
             } else {
                 *root = insert(*root, key, val);
                 fprintf(out, "Узел добавлен: ключ=%s, значение=%.4f\n\n", key, val);
-                printf("Узел добавлен: ключ=%s, значение=%.4f\n", key, val);
             }
         } else if (op == 2) {
             if (fscanf(in, "%6s", key) != 1) break;
@@ -32,20 +30,16 @@ void process_file(const char* input_filename, const char* output_filename, Node*
             if (search(*root, key) != NULL) {
                 *root = remove_node(*root, key);
                 fprintf(out, "Узел удалён: ключ=%s\n\n", key);
-                printf("Узел удалён: ключ=%s\n", key);
             } else {
                 fprintf(out, "Ошибка: ключ '%s' не найден\n\n", key);
-                printf("Ошибка: ключ '%s' не найден\n", key);
             }
         } else if (op == 3) {
             fprintf(out, "3\n");
             if (*root == NULL) {
-                fprintf(out, "(дерево пустое)\n\n");
-                printf("(дерево пустое)\n");
+                fprintf(out, "дерево пустое\n\n");
             } else {
                 printTreeToFile(*root, 0, out);
                 fprintf(out, "\n");
-                printTree(*root, 0);
             }
         } else if (op == 4) {
             if (fscanf(in, "%6s", key) != 1) break;
@@ -53,14 +47,11 @@ void process_file(const char* input_filename, const char* output_filename, Node*
             Node* found = search(*root, key);
             if (found != NULL) {
                 fprintf(out, "Найдено: ключ=%s, значение=%.4f\n\n", found->key, found->value);
-                printf("Найдено: ключ=%s, значение=%.4f\n", found->key, found->value);
             } else {
                 fprintf(out, "Ключ '%s' не найден\n\n", key);
-                printf("Ключ '%s' не найден\n", key);
             }
         } else {
             fprintf(out, "Неизвестная команда: %d\n\n", op);
-            printf("Неизвестная команда: %d\n", op);
         }
     }
 
@@ -84,7 +75,7 @@ void process_stdin(Node** root) {
     printf(" 0                   — выход\n");
 
     while (1) {
-        printf("\nКоманда: ");
+        printf("\nВведит команду: ");
         if (scanf("%d", &op) != 1) break;
         if (op == 0) break;
 
