@@ -55,7 +55,6 @@ Node* balance(Node* node) {
         return rotate_left(node);
     }
     if (bfactor(node) == -2) {
-        /* BUGFIX: было < 0, должно быть > 0 -- Left-Right случай */
         if (bfactor(node->left) > 0) {
             node->left = rotate_left(node->left);
         }
