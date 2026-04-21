@@ -66,10 +66,10 @@ void test_search_empty_tree() {
 void test_insert_duplicate_key() {
     Node* root = NULL;
     root = insert(root, "abc", 1.0);
-    root = insert(root, "abc", 2.0); /* дубликат — должен молча игнорироваться */
+    root = insert(root, "abc", 2.0);
     Node* found = search(root, "abc");
     assert(found != NULL);
-    assert(found->value == 1.0); /* значение не перезаписано */
+    assert(found->value == 1.0);
     free_tree(root);
 }
 
@@ -79,7 +79,6 @@ void test_balance_right_right() {
     root = insert(root, "bbb", 2.0);
     root = insert(root, "ccc", 3.0);
     assert_balanced(root);
-    /* после балансировки корень — "bbb" */
     assert(strcmp(root->key, "bbb") == 0);
     free_tree(root);
 }
@@ -98,7 +97,7 @@ void test_balance_left_right() {
     Node* root = NULL;
     root = insert(root, "ccc", 3.0);
     root = insert(root, "aaa", 1.0);
-    root = insert(root, "bbb", 2.0); /* Left-Right случай */
+    root = insert(root, "bbb", 2.0); 
     assert_balanced(root);
     assert(strcmp(root->key, "bbb") == 0);
     free_tree(root);
@@ -108,7 +107,7 @@ void test_balance_right_left() {
     Node* root = NULL;
     root = insert(root, "aaa", 1.0);
     root = insert(root, "ccc", 3.0);
-    root = insert(root, "bbb", 2.0); /* Right-Left случай */
+    root = insert(root, "bbb", 2.0);
     assert_balanced(root);
     assert(strcmp(root->key, "bbb") == 0);
     free_tree(root);
@@ -122,7 +121,6 @@ void test_balance_many_inserts() {
         root = insert(root, (char*)keys[i], (double)i);
     }
     assert_balanced(root);
-    /* все ключи должны находиться */
     for (int i = 0; i < n; i++) {
         assert(search(root, (char*)keys[i]) != NULL);
     }
