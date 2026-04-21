@@ -25,4 +25,4 @@ run_tests:
 	./tests
 
 clean:
-	rm -f *.o avl_tree tests
+	rm -f *.o avl_tree main console_and_files

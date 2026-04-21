@@ -75,7 +75,7 @@ void process_stdin(Node** root) {
     printf(" 0                   — выход\n");
 
     while (1) {
-        printf("\nВведит команду: ");
+        printf("\nВведите команду: ");
         if (scanf("%d", &op) != 1) break;
         if (op == 0) break;
 
