@@ -27,7 +27,6 @@ static int** alloc_matrix(int n) {
     return m;
 }
 
-/* 0 — матрица корректна, иначе -1 и текст в err */
 static int validate_matrix(int n, int** m, char* err, size_t err_len) {
     if (n < 1) {
         snprintf(err, err_len, "число вершин должно быть >= 1");
