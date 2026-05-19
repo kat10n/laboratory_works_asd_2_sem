@@ -20,7 +20,6 @@ FetchContent_MakeAvailable(benchmark)
 add_executable(main src/main.c src/kruskal.c)
 target_include_directories(main PRIVATE src)
 set_property(TARGET main PROPERTY C_STANDARD 11)
-# CLion / VS: Run без аргументов → интерактивный режим (ввод команд в терминале)
 set_target_properties(main PROPERTIES
         VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 )
