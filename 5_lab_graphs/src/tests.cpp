@@ -29,7 +29,7 @@ TEST(FindTest, RootReturnsItself) {
 }
 
 TEST(FindTest, PathCompression) {
-    int parent[] = {0, 0, 1}; // 2 -> 1 -> 0
+    int parent[] = {0, 0, 1};
     EXPECT_EQ(find(parent, 2), 0);
     EXPECT_EQ(parent[2], 0);
 }
