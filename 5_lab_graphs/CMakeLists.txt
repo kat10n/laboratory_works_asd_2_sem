@@ -19,12 +19,19 @@ FetchContent_MakeAvailable(benchmark)
 
 add_executable(main src/main.c src/kruskal.c)
 target_include_directories(main PRIVATE src)
+set_property(TARGET main PROPERTY C_STANDARD 11)
+# CLion / VS: Run без аргументов → интерактивный режим (ввод команд в терминале)
+set_target_properties(main PROPERTIES
+        VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+)
 
 add_executable(my_test src/tests.cpp src/kruskal.c)
 target_include_directories(my_test PRIVATE src)
 target_link_libraries(my_test gtest gtest_main)
 
-# --- бенчмарки ---
 add_executable(my_bench src/bench.cpp src/kruskal.c)
 target_include_directories(my_bench PRIVATE src)
 target_link_libraries(my_bench benchmark::benchmark)
+set_target_properties(my_bench PROPERTIES
+        VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+)
